@@ -345,4 +345,108 @@ If you want, I can show you:
 * **How to add the “weak/strong segment” heuristic**
 * **How to tune segmentation for perfect latency/quality tradeoff**
 
-Just tell me.
+---
+
+# ✅ **1. Does Google provide a glossary for translation?**
+
+### ✔ **YES — Google Translation API supports custom glossaries**
+
+…but only in the **Translation API v3 “Advanced”** (also called *Cloud Translation Advanced*).
+
+### ⚠️ **NOT included in:**
+
+* the free/basic v2 API
+* `translate.googleapis.com/language/translate/v2`
+* “simple” translate endpoints used by most tutorials
+
+To use glossaries you must:
+
+* enable **Google Cloud Translation Advanced (v3)**
+* use the v3 `TranslationServiceClient`
+* store glossaries in Cloud Storage (CSV or TSV)
+
+Glossaries let you enforce terminology like:
+
+| Source               | Target                       |
+| -------------------- | ---------------------------- |
+| Horsch Sensor Module | Horsch Sensormodul           |
+| Active Exoskeleton   | Aktives Exoskelett           |
+| Localization Tag     | Lokalisierungs-Tag           |
+| Sim Trans            | Sim Trans (do not translate) |
+
+These mappings are **strict** and override normal translation.
+
+---
+
+# ⭐ **3. How to implement YOUR glossary layer (recommended for your setup)**
+
+Since real Google NMT v3 glossaries are slow (60–150ms extra overhead) and require Cloud Storage, the best solution for real-time is:
+
+# ➤ **Add a lightweight “terminology injection layer” between ASR → NMT**
+
+(or after NMT before TTS).
+
+### ✨ What it does
+
+* Enforce consistent translations
+* Fix brand names & proper nouns
+* Prevent mistranslations
+* Replace forbidden translations
+* Preserve acronyms
+
+### ✔ **Fast, 0–1 ms latency**
+
+### ✔ **Works in real-time**
+
+### ✔ **No Google API changes needed**
+
+---
+
+You can decide whether to apply the glossary:
+
+* **before translation only**
+* **after translation only**
+* **both** (recommended)
+
+---
+
+You can store session glossaries in:
+
+* a JSON file
+* memory
+* Redis (if building server-side)
+
+---
+
+### **KUDO, Interprefy, Zoom**
+
+* Internally use:
+
+  * weighted phrase rules
+  * regular expression replacement
+  * domain-specific dictionaries
+
+Just like we’re implementing.
+
+---
+
+# 🎯 **Conclusion**
+
+### ✔ **Do you need another layer? YES.**
+
+A glossary layer gives professional, consistent terminology.
+
+### ✔ **Should it be local (not Google)? YES.**
+
+Much faster, more reliable, easier to update.
+
+### ✔ **Does Google Translate v2 support glossaries? NO.**
+
+### ✔ **Does Google Translate v3 Advanced support glossaries? YES but slow.**
+
+Not good for sub-500 ms real-time output.
+
+### ✔ **Best approach for your setup**
+
+Implement **local glossary injection** between segmentation and NMT.
+---
