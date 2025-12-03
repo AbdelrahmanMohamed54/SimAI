@@ -450,3 +450,244 @@ Not good for sub-500 ms real-time output.
 
 Implement **local glossary injection** between segmentation and NMT.
 ---
+
+Great questions — and these decisions will strongly influence the quality, maintainability, and **scientific rigor** of your thesis.
+Here’s the **correct engineering approach** and the **best scientific workflow**.
+
+---
+
+# ✅ 1. How should you implement the APIs so testing combinations is easy?
+
+**Absolutely do NOT create separate files for each combination.**
+That will lead to chaos:
+
+* 3 ASR engines × 3 NMT engines × 3 TTS engines = **27 combinations**
+* each combination becomes a separate script → unmaintainable
+* makes your thesis weaker → "non-systematic comparison"
+
+Instead, you should implement a **modular, plug-and-play architecture**.
+
+---
+
+# ✅ The correct structure: a Unified Modular Pipeline (Strategy Pattern)
+
+This is the industry standard for comparing models.
+
+### Folder structure:
+
+```
+/asr
+    google_asr.py
+    azure_asr.py
+    deepgram_asr.py
+
+/nmt
+    google_nmt.py
+    deepl_nmt.py
+    azure_nmt.py
+
+/tts
+    google_tts.py
+    azure_tts.py
+    elevenlabs_tts.py
+
+/pipeline
+    realtime_pipeline.py   ← orchestrates segmentation + routing
+    config.py              ← choose ASR/NMT/TTS here
+
+/tests
+    test_asr.py
+    test_nmt.py
+    test_tts.py
+    test_full_pipeline.py
+```
+
+---
+
+# 🎛️ How you select a combination (super easy)
+
+In `config.py`:
+
+```python
+ASR_PROVIDER = "google"     # options: google, azure, deepgram
+NMT_PROVIDER = "deepl"      # options: deepl, google, azure
+TTS_PROVIDER = "elevenlabs" # options: eleven, google, azure
+```
+
+Then pipeline loads them dynamically:
+
+```python
+from asr import google_asr, azure_asr, deepgram_asr
+from nmt import deepl_nmt, google_nmt, azure_nmt
+from tts import google_tts, azure_tts, eleven_tts
+
+def load_asr(provider):
+    if provider == "google":
+        return google_asr.GoogleASR(...)
+    if provider == "azure":
+        return azure_asr.AzureASR(...)
+    if provider == "deepgram":
+        return deepgram_asr.DeepgramASR(...)
+```
+
+And same for NMT + TTS.
+
+💡 **This means changing combinations requires ZERO code changes**
+→ Just modify the config file or UI dropdown.
+
+---
+
+# 🚀 2. What is the best way to test the APIs?
+
+### **You need three types of tests**, used in machine translation research:
+
+---
+
+## (A) Component-level tests
+
+Each part alone:
+
+* `test_asr.py`
+* `test_nmt.py`
+* `test_tts.py`
+
+This verifies correctness of:
+
+* latency
+* stability
+* errors
+* accuracy (ASR/NMT)
+* streaming behavior
+
+---
+
+## (B) Integration tests
+
+You combine:
+
+* ASR → NMT
+* NMT → TTS
+* ASR → TTS
+* ASR → NMT → TTS (full)
+
+This shows:
+
+* pipeline latency
+* end-to-end quality
+* real-time behavior
+
+---
+
+## (C) Automatic benchmark tests
+
+Where you run **the exact same audio file & text** through all combinations and compare scores.
+
+This is the scientific core of your thesis.
+
+---
+
+# 🧪 3. Should you build the UI now or later?
+
+⭐ **Build the UI LAST.**
+
+Here’s why:
+
+### ❌ If you build it now:
+
+* The UI will break as soon as a new API is added
+* You’ll rebuild it many times
+* Your pipeline code will be unstable
+* You don't yet know which API combos perform best
+* You’ll lose time fixing things that will later be deleted
+
+### ✅ If you build it after testing:
+
+* You already know the “winning” providers
+* API interface and architecture is stable
+* You can design a clean settings panel for selecting ASR/NMT/TTS
+* You will avoid rewriting code
+* Your UI will reflect real scientific results
+
+### UI should be the *final step*
+
+— AFTER all implementations, benchmarks, and selection.
+
+---
+
+# 🧠 4. Professional architecture recommendation (industry standard)
+
+### Your pipeline should look like this:
+
+```
+RealtimePipeline:
+    - ASR engine (pluggable)
+    - NMT engine (pluggable)
+    - TTS engine (pluggable)
+    - Segmentation layer
+    - Latency monitor
+    - Quality scores (optional)
+```
+
+With a clean runtime selection:
+
+```python
+pipeline = RealtimePipeline(
+    asr=load_asr(ASR_PROVIDER),
+    nmt=load_nmt(NMT_PROVIDER),
+    tts=load_tts(TTS_PROVIDER),
+)
+pipeline.run()
+```
+
+---
+
+# 🏆 5. Advantages of this approach
+
+### ✔ Zero duplication
+
+One pipeline, infinite combinations.
+
+### ✔ Scientific rigor
+
+You compare engines fairly under identical conditions.
+
+### ✔ Easy benchmarking
+
+You can run:
+
+```
+python benchmark.py --asr google --nmt deepl --tts azure
+```
+
+### ✔ Future-proof
+
+You can add new providers in 5 minutes.
+
+### ✔ UI-ready
+
+Later the UI simply calls:
+
+```
+pipeline.set_asr("google")
+pipeline.set_nmt("deepl")
+pipeline.set_tts("elevenlabs")
+```
+
+---
+
+# 🎯 Final recommendation summary
+
+| Step | What you do                                 |
+| ---- | ------------------------------------------- |
+| 1    | Implement modular ASR/NMT/TTS classes       |
+| 2    | Implement dynamic loader (Strategy Pattern) |
+| 3    | Build main pipeline with segmentation logic |
+| 4    | Run component-level tests                   |
+| 5    | Run integration tests                       |
+| 6    | Benchmark all combinations                  |
+| 7    | Select best combination(s)                  |
+| 8    | Build final UI                              |
+
+This is the academically correct and engineering-best approach.
+
+
