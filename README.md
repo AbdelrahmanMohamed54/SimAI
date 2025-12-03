@@ -691,3 +691,138 @@ pipeline.set_tts("elevenlabs")
 This is the academically correct and engineering-best approach.
 
 
+Yes — **if your system is real-time, your *main* evaluations absolutely should be on the APIs in streaming mode.**
+Otherwise you’re not really measuring what you’re building.
+
+But there’s a useful nuance:
+
+---
+
+## 1. For the thesis: what must be evaluated in streaming?
+
+For your use case (live interpreting), these must be evaluated in **streaming mode**:
+
+### 🔊 ASR (Speech → Text)
+
+* **WER in streaming mode** (on final hypotheses).
+* **Latency**:
+
+  * Time from spoken audio to *final* segment.
+  * Optionally: time to first partial.
+* **Stability**:
+
+  * How often partial text is revised / backtracked.
+  * How long until a clause becomes “stable enough” (like you’re already modeling with TAIL_WORDS and TAIL_STABLE_SEC).
+
+These three are specifically **streaming phenomena** and won’t show up in offline/batch ASR.
+
+---
+
+### 🌐 NMT (Text → Text)
+
+For NMT, you have two layers:
+
+1. **Model quality** (BLEU, COMET, etc.)
+
+   * Here, you *can* use non-streaming / batch calls on your segmented text.
+   * Many NMT APIs don’t even have a “streaming” distinction – they just return the full translation once done.
+
+2. **Pipeline behavior**
+
+   * When used in your *streaming* loop, measure:
+
+     * **Segment-level translation latency** (time from ASR segment ready → translation ready).
+     * Effect of segmentation on translation quality (too small segments can hurt fluency).
+
+So:
+👉 *Quality* of NMT can be mostly evaluated with batch,
+👉 but *behavior* (latency + segmentation interaction) should be tested in your streaming pipeline.
+
+---
+
+### 🗣️ TTS (Text → Speech)
+
+Again, two perspectives:
+
+1. **Streaming / real-time behavior**
+
+   * Time from text segment to:
+
+     * start of audio playback,
+     * and to end of playback.
+   * Can the TTS system keep up with a realistic speech pace?
+
+2. **Perceptual quality** (MOS, etc.)
+
+   * You can generate audio offline from the same segments and ask listeners to rate them.
+   * But in your thesis you should state clearly that **real-time playback uses the same API in near-streaming style** (segment by segment, as you’re doing).
+
+---
+
+## 2. So what should your *core results* be based on?
+
+For a thesis about **real-time AI interpretation**, I’d structure it like this:
+
+### Core experimental setting (main results)
+
+* Everything runs **in streaming mode**:
+
+  * ASR in streaming mode (like now).
+  * NMT called segment-by-segment *inside* your event loop.
+  * TTS synthesizing each translated segment as soon as it arrives.
+* You collect:
+
+  * **End-to-end latency** (speaker says a clause → listener hears target speech).
+  * **End-to-end quality** (human ratings or objective surrogates like back-translation BLEU).
+  * **Robustness** with continuous speech, few pauses, etc.
+
+This answers the real research question:
+
+> “Which cloud components and segmentation strategies yield the best streaming interpreter?”
+
+---
+
+### Optional “upper bound” experiments
+
+You can *optionally* add a second type of experiment:
+
+* **Offline oracle scenario**:
+
+  * Use **perfect text** (manually clean transcript, no ASR errors).
+  * Use **batch NMT**.
+  * Use **offline TTS generation**, no latency constraints.
+
+That gives you:
+
+* An **upper bound** on how good translation quality could be *if* ASR & latency were perfect.
+* A way to isolate:
+
+  * How much error comes from ASR,
+  * How much comes from NMT,
+  * How much is lost due to segmentation / streaming constraints.
+
+But this is extra — the **main metrics that answer your thesis question must be from streaming**.
+
+---
+
+## 3. EN→DE streaming only – is that OK?
+
+Yes, and actually:
+
+* Testing **EN→DE in full streaming mode** across APIs and pipelines is already a **serious** evaluation.
+* Just make sure you say clearly in the thesis:
+
+  * “All evaluations are in *streaming* / real-time conditions, since the target use-case is live interpreting.”
+
+If you ever add DE→EN, you can reuse exactly the same streaming setup and segmentation logic — just flip the language codes.
+
+---
+
+If you want, next step we can:
+
+* Design a **concrete experiment plan** for streaming evaluation:
+
+  * number of test paragraphs,
+  * how you’ll record them,
+  * what exactly you’ll log (timestamps, WER, latency),
+  * and how to compare “Google streaming ASR + DeepL + ElevenLabs” vs “Azure ASR + DeepL + Google TTS”, etc.
