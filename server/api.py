@@ -86,6 +86,49 @@ async def ws_audio(websocket: WebSocket, lang: str):
     except Exception:
         await ws_manager.disconnect_audio(lang, websocket)
 
+# --- Add this import at the top of api.py if not present ---
+import json
+# -----------------------------------------------------------
+
+# -------------------------------------------------
+# WEBSOCKETS (Pipeline PUSH/Azure RECEIVE)
+# -------------------------------------------------
+
+@app.websocket("/ws/pipeline/text/{lang}")
+async def websocket_pipeline_text_endpoint(websocket: WebSocket, lang: str):
+    """
+    RECEIVES JSON translation segments from the local pipeline 
+    and immediately broadcasts them to the audience (subscribers) via ws_manager.
+    """
+    await websocket.accept()
+    try:
+        # Loop waits for data sent FROM THE LOCAL PIPELINE
+        async for message_text in websocket.iter_text():
+            import json
+            message = json.loads(message_text)
+            # Broadcast the received message to all audience clients
+            await ws_manager.broadcast_text(lang, message)
+    except WebSocketDisconnect:
+        print(f"[API] Pipeline text client disconnected for {lang}")
+    except Exception as e:
+        print(f"[API] Pipeline text error: {e}")
+
+@app.websocket("/ws/pipeline/audio/{lang}")
+async def websocket_pipeline_audio_endpoint(websocket: WebSocket, lang: str):
+    """
+    RECEIVES raw PCM audio bytes from the local pipeline 
+    and immediately broadcasts them to the audience (subscribers) via ws_manager.
+    """
+    await websocket.accept()
+    try:
+        # Loop waits for raw bytes sent FROM THE LOCAL PIPELINE
+        async for audio_bytes in websocket.iter_bytes():
+            # Broadcast the received bytes to all audience clients
+            await ws_manager.broadcast_audio(lang, audio_bytes)
+    except WebSocketDisconnect:
+        print(f"[API] Pipeline audio client disconnected for {lang}")
+    except Exception as e:
+        print(f"[API] Pipeline audio error: {e}")
 
 # -------------------------------------------------
 # PIPELINE STARTUP
@@ -142,6 +185,7 @@ async def ws_audio(websocket: WebSocket, lang: str):
 #             pass
     
 #     print("[API] Pipeline shutdown complete")
+
 
 
 
