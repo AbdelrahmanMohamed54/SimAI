@@ -11,10 +11,13 @@ const transcriptBox = document.getElementById("transcript-box");
 const languageSelect = document.getElementById("language-select");
 const startBtn = document.getElementById("start-btn");
 
-const BACKEND_HOST = "94.57.27.161:8000"; // ← YOUR IP
-const wsScheme = location.protocol === "https:" ? "wss" : "ws";
-//const base = `${wsScheme}://${BACKEND_HOST}`;
-const base = `${wsScheme}://${location.host}`;
+const BACKEND_HOST = "simai-demo-ckbva3h3cwg6asew.centralus-01.azurewebsites.net"; //"94.57.27.161:8000"; // ← YOUR IP
+//const wsScheme = location.protocol === "https:" ? "wss" : "ws";
+const wsScheme = "wss";
+
+const base = `${wsScheme}://${BACKEND_HOST}`;
+//const base = `${wsScheme}://${location.host}`;
+
 
 // ----------------------------------
 // Append text to transcript
@@ -169,4 +172,5 @@ languageSelect.addEventListener("change", async () => {
     statusLabel.textContent = `Now listening in: ${lang}`;
 
   }, 150);
+
 });
