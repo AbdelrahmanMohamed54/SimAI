@@ -91,55 +91,56 @@ async def ws_audio(websocket: WebSocket, lang: str):
 # PIPELINE STARTUP
 # -------------------------------------------------
 
-@app.on_event("startup")
-async def startup_event():
-    """
-    Start pipeline as a background task on FastAPI's event loop.
-    """
-    print("[API] Starting real-time pipeline...")
-    loop = asyncio.get_running_loop()
+# @app.on_event("startup")
+# async def startup_event():
+#     """
+#     Start pipeline as a background task on FastAPI's event loop.
+#     """
+#     print("[API] Starting real-time pipeline...")
+#     loop = asyncio.get_running_loop()
 
-    # Import here to avoid circular dependencies
-    from pipeline.realtime_pipeline import RealTimePipeline
+#     # Import here to avoid circular dependencies
+#     from pipeline.realtime_pipeline import RealTimePipeline
     
-    # Create and store pipeline instance
-    app.state.pipeline = RealTimePipeline()
+#     # Create and store pipeline instance
+#     app.state.pipeline = RealTimePipeline()
     
-    # Store the task so we can cancel it on shutdown
-    app.state.pipeline_task = None
+#     # Store the task so we can cancel it on shutdown
+#     app.state.pipeline_task = None
 
-    async def pipeline_wrapper():
-        try:
-            await app.state.pipeline.run()
-        except asyncio.CancelledError:
-            print("[API] Pipeline task cancelled")
-            raise
-        except Exception as e:
-            print(f"[API] Pipeline error: {e}")
+#     async def pipeline_wrapper():
+#         try:
+#             await app.state.pipeline.run()
+#         except asyncio.CancelledError:
+#             print("[API] Pipeline task cancelled")
+#             raise
+#         except Exception as e:
+#             print(f"[API] Pipeline error: {e}")
 
-    app.state.pipeline_task = loop.create_task(pipeline_wrapper())
+#     app.state.pipeline_task = loop.create_task(pipeline_wrapper())
 
 
-# ADD THIS NEW SHUTDOWN HANDLER
-@app.on_event("shutdown")
-async def shutdown_event():
-    """
-    Gracefully shutdown pipeline on server stop.
-    """
-    print("[API] Shutting down pipeline...")
+# # ADD THIS NEW SHUTDOWN HANDLER
+# @app.on_event("shutdown")
+# async def shutdown_event():
+#     """
+#     Gracefully shutdown pipeline on server stop.
+#     """
+#     print("[API] Shutting down pipeline...")
     
-    # Set global shutdown flag
-    from pipeline.realtime_pipeline import SHUTDOWN
-    import pipeline.realtime_pipeline as pipeline_module
-    pipeline_module.SHUTDOWN = True
+#     # Set global shutdown flag
+#     from pipeline.realtime_pipeline import SHUTDOWN
+#     import pipeline.realtime_pipeline as pipeline_module
+#     pipeline_module.SHUTDOWN = True
     
-    # Cancel the pipeline task
-    if hasattr(app.state, 'pipeline_task') and app.state.pipeline_task:
-        app.state.pipeline_task.cancel()
-        try:
-            await asyncio.wait_for(app.state.pipeline_task, timeout=2.0)
-        except (asyncio.CancelledError, asyncio.TimeoutError):
-            pass
+#     # Cancel the pipeline task
+#     if hasattr(app.state, 'pipeline_task') and app.state.pipeline_task:
+#         app.state.pipeline_task.cancel()
+#         try:
+#             await asyncio.wait_for(app.state.pipeline_task, timeout=2.0)
+#         except (asyncio.CancelledError, asyncio.TimeoutError):
+#             pass
     
-    print("[API] Pipeline shutdown complete")
+#     print("[API] Pipeline shutdown complete")
+
 
