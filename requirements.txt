@@ -1,18 +1,9 @@
-google-cloud-speech
-pydub
-azure-cognitiveservices-speech>=1.37.0
-aiohttp
-assemblyai 
-pyaudio
-deepl
-elevenlabs
-
 fastapi
 uvicorn[standard]
-websockets
 python-dotenv
 
-# Cloud APIs
-google-cloud-texttospeech
-google-cloud-translate
+websockets
+
+
+
 
