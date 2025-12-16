@@ -9,7 +9,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 
 from server.ws_manager import ws_manager
-from pipeline.realtime_pipeline import pipeline_entrypoint as pipeline_main
+#from pipeline.realtime_pipeline import pipeline_entrypoint as pipeline_main
 
 # -------------------------------------------------
 # FASTAPI APP
@@ -142,5 +142,6 @@ async def ws_audio(websocket: WebSocket, lang: str):
 #             pass
     
 #     print("[API] Pipeline shutdown complete")
+
 
 
