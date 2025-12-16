@@ -2,6 +2,7 @@
 
 import os
 import asyncio
+from pathlib import Path # <-- ADD THIS IMPORT
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
@@ -15,7 +16,7 @@ from pipeline.realtime_pipeline import pipeline_entrypoint as pipeline_main
 # -------------------------------------------------
 app = FastAPI(title="SimAI Realtime Translation Server")
 
-# Allow browser UI â†’ backend communication
+# Allow browser UI → backend communication
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],     # In production, replace with your domain
@@ -25,26 +26,31 @@ app.add_middleware(
 )
 
 # -------------------------------------------------
-# STATIC FRONTEND MOUNT
+# STATIC FRONTEND MOUNT  <-- MODIFIED SECTION
 # -------------------------------------------------
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-FRONTEND_DIR = os.path.join(BASE_DIR, "..", "frontend")
+# Use pathlib for robust pathing:
+# 1. Path(__file__) is /home/site/wwwroot/server/api.py
+# 2. .parent.parent moves up two directories to /home/site/wwwroot (the project root)
+PROJECT_ROOT = Path(__file__).parent.parent.resolve()
+FRONTEND_DIR = PROJECT_ROOT / "frontend"
 
 # Serve frontend files at /static/*
-#app.mount("/static", StaticFiles(directory=FRONTEND_DIR), name="static")
-
 app.mount(
     "/static",
-    StaticFiles(directory=os.path.join(os.path.dirname(__file__), "..", "frontend")),
+    StaticFiles(directory=FRONTEND_DIR),
     name="static",
 )
 
 # Serve index.html at the root (/)
 @app.get("/")
 async def serve_index():
-    return FileResponse(os.path.join(FRONTEND_DIR, "index.html"))
+    # FileResponse requires a string path, so we use str() on the Path object
+    return FileResponse(str(FRONTEND_DIR / "index.html"))
 
+# -------------------------------------------------
+# WEBSOCKETS
+# ... (rest of the file is unchanged)
 # -------------------------------------------------
 # WEBSOCKETS
 # -------------------------------------------------
@@ -136,3 +142,4 @@ async def shutdown_event():
             pass
     
     print("[API] Pipeline shutdown complete")
+
