@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>SimAI Live Translation</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      margin: 0;
+      padding: 0;
+      background: #d8c698; /* Off-white/beige */
+      color: #222;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+    }
+    header {
+      width: 100%;
+      padding: 1rem 2rem;
+      display: flex;
+      align-items: center;
+      box-sizing: border-box;
+      background: transparent;
+
+    }
+    .logo {
+        height: 50px;
+        object-fit: contain;
+        width: 70px;
+        height: 70px;
+        border-radius: 20%;       /* full circle */
+        object-fit: cover;        /* keeps aspect ratio, fills circle */
+        background-color: transparent;  /* ensure no fill behind */
+    }
+    main {
+      max-width: 800px;
+      width: 100%;
+      padding: 1rem 2rem 2rem;
+      box-sizing: border-box;
+    }
+    h1 {
+      margin-top: 0.5rem;
+      font-size: 1.6rem;
+    }
+    .subtitle {
+      margin-top: 0.25rem;
+      margin-bottom: 1.5rem;
+      color: #000000c2;
+    }
+    .control-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      align-items: center;
+      margin-bottom: 1.5rem;
+    }
+    select, button {
+      padding: 0.5rem 0.75rem;
+      border-radius: 0.375rem;
+      border: 2px solid #945f5f;
+      background: #d8b388;
+      color: #111;
+      font-size: 0.95rem;
+    }
+    button {
+      background: #bb3a19;
+      border-color:  2px solid #58231f;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    button:disabled {
+      background: #3f65aa;
+      border: 2px solid #112f47;
+      cursor: not-allowed;
+    }
+    .status {
+      font-size: 0.9rem;
+      color: #8b9398;
+    }
+    .transcript-box {
+    margin-top: 1rem;
+    padding: 1rem;
+    border-radius: 0.22rem;
+    background: #c7642b; /* light blue */
+    border: 2px solid #1f2937;
+    min-height: 180px;
+    max-height: 320px;
+    overflow-y: auto;
+    font-size: 0.98rem;
+    line-height: 1.5;
+    white-space: pre-wrap;
+
+    /* Smooth scrolling */
+    scrollbar-width: thin;
+    scrollbar-color: #e3986d #c7642b; /* thumb | track */
+    }
+
+    /* For WebKit browsers (Chrome, Edge, Safari) */
+    .transcript-box::-webkit-scrollbar {
+    width: 5px;             /* small scrollbar */
+    }
+
+    .transcript-box::-webkit-scrollbar-track {
+    background: #c7642b;    /* same as box */
+    border-radius: 0.75rem; /* round like box */
+
+      /* NEW — creates top & bottom spacing */
+    border-top: 12px solid transparent;
+    border-bottom: 12px solid transparent;
+    }
+
+    .transcript-box::-webkit-scrollbar-thumb {
+    background: #e3986d;    /* slightly darker light-blue */
+    border-radius: 0.75rem; /* round thumb as well */
+      /* NEW — creates top & bottom spacing */
+    border-top: 8px solid transparent;
+    border-bottom: 8px solid transparent;
+    }
+
+    .transcript-box::-webkit-scrollbar-thumb:hover {
+    background: #e3986d;    /* hover color */
+    }
+
+    .transcript-segment {
+      margin-bottom: 0.5rem;
+    }
+    .transcript-segment strong {
+      color: #552b24;
+    }
+
+    /* Dropdown (select) style */
+    #language-select {
+    padding: 0.5rem 0.75rem;
+    border-radius: 0.375rem;
+    border: 1px solid #945f5f;
+    background: #d8b388; /* light grey */
+    color: #111;
+    font-size: 0.95rem;
+    appearance: none;
+    }
+
+    /* When user opens the dropdown */
+    #language-select:focus {
+    border-color: #bb3a19;     /* dark orange */
+    box-shadow: 0 0 0 2px #bb3a1970;
+    outline: none;
+    }
+
+    /* Change the highlight color while hovering items */
+    #language-select option:hover,
+    #language-select option:checked,
+    #language-select option:active {
+    background-color: #bb3a19 !important; 
+    color: white !important;
+    }
+
+  </style> 
+</head>
+<body>
+  <header>
+    <!-- Placeholder logo text – replace with image if you have one -->
+    <img src="/static/logo-2.png" alt="SimAI Logo" width="190" height="60">
+  </header>
+
+  <main>
+    <h1>Welcome to Sim-AI Live Translation</h1>
+    <p class="subtitle">
+      Please select your language to listen to the live translation!
+    </p>
+
+    <div class="control-row">
+      <label for="language-select">Language:</label>
+      <select id="language-select">
+        <!-- For now, match TARGET_LANG from your config; e.g. "de" -->
+        <option value="ar">Ar - العربية</option>
+        <option value="de" selected>De - Deutsch</option>
+        <!-- You can add more later once you support multi-target -->
+        <!-- <option value="fr">French</option> -->
+      </select>
+
+      <button id="start-btn">Start Listening</button>
+      <span class="status" id="status-label">Not connected</span>
+    </div>
+
+    <div class="transcript-box" id="transcript-box">
+      <!-- Translated text will appear here -->
+    </div>
+  </main>
+
+  <script src="/static/app.js"></script>
+
+</body>
+</html>
+
+
