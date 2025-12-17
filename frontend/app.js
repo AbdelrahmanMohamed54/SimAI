@@ -80,7 +80,7 @@ function connectSockets(lang) {
   // const base = `${wsScheme}://${location.host}`;
 
   // TEXT SOCKET --------------------------
-  const textUrl = `${base}/ws/text/${lang}`;
+  const textUrl = `${base}/ws/pipeline/text/${lang}`;
   textSocket = new WebSocket(textUrl);
 
   textSocket.onopen = () => {
@@ -100,7 +100,7 @@ function connectSockets(lang) {
   textSocket.onerror = (err) => console.log("Text WS error", err);
 
   // AUDIO SOCKET -------------------------
-  const audioUrl = `${base}/ws/audio/${lang}`;
+  const audioUrl = `${base}/ws/pipeline/text/${lang}`;
   audioSocket = new WebSocket(audioUrl);
   audioSocket.binaryType = "arraybuffer";
 
@@ -174,3 +174,4 @@ languageSelect.addEventListener("change", async () => {
   }, 150);
 
 });
+
