@@ -100,7 +100,7 @@ function connectSockets(lang) {
   textSocket.onerror = (err) => console.log("Text WS error", err);
 
   // AUDIO SOCKET -------------------------
-  const audioUrl = `${base}/ws/text/${lang}`;
+  const audioUrl = `${base}/ws/audio/${lang}`;
   audioSocket = new WebSocket(audioUrl);
   audioSocket.binaryType = "arraybuffer";
 
@@ -174,4 +174,5 @@ languageSelect.addEventListener("change", async () => {
   }, 150);
 
 });
+
 
