@@ -49,9 +49,6 @@ async def serve_index():
 
 # -------------------------------------------------
 # WEBSOCKETS
-# ... (rest of the file is unchanged)
-# -------------------------------------------------
-# WEBSOCKETS
 # -------------------------------------------------
 
 @app.websocket("/ws/text/{lang}")
@@ -184,6 +181,7 @@ async def websocket_pipeline_audio_endpoint(websocket: WebSocket, lang: str):
 #             pass
     
 #     print("[API] Pipeline shutdown complete")
+
 
 
 
